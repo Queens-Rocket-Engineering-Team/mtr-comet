@@ -38,16 +38,17 @@ COMET is a shared tool. It turns test data into performance metrics, estimates m
 - **SIM-1** Simulate the transient performance of a self-pressurizing N2O hybrid motor from initial tank conditions to end of burn.
 - **SIM-2** Support SPI, HEM and Dyer injector models.
 - **SIM-3** Support circular-port grains and arbitrary 2D port geometries imported from CAD.
-- **SIM-4** Reproduce a test's measured chamber pressure and thrust within `[TBD]`% when using parameters estimated from that test.
-- **SIM-5** Match HRAP and the current simulation within `[TBD]`% when using equivalent models.
+- **SIM-4** Reproduce a test's measured chamber pressure, oxidizer mass, and thrust within 10% when using parameters estimated from that test.
+- **SIM-5** Match HRAP and the current simulation within 5% when using equivalent models.
 - **SIM-6** Report why a simulation ended, and warn when a model is used outside its valid range.
 - **SIM-7** Compare simulation results against test data.
 - **SIM-8** Export motor data for use in OpenRocket and RocketPy flight simulations.
+- **SIM-9** Output heat ratios, mass flow rate, and other parameters useful in motor component design
 
 ### Usage
 
 - **USE-1** Be available as a GUI, CLI and Python package, producing the same results from each.
-- **USE-2** Produce a standard post-test report within `[TBD]` minutes of receiving test data.
+- **USE-2** Produce a standard post-test report within 30 minutes of receiving test data.
 - **USE-3** Export results in open formats readable without COMET.
 - **USE-4** Accept and display values in SI and US customary units.
 - **USE-5** Allow new analysis methods and models to be added without modifying existing ones.
