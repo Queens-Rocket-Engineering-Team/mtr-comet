@@ -344,7 +344,7 @@ regression: {model: power_law, a: 3.4e-5, n: 0.62}
 nozzle: {model: conical, throat_d: 42 mm, exit_d: 95.25 mm}
 ```
 
-`engine` names the simulation engine, which is registered like a plugin. Today there is one engine, for the self-pressurizing hybrid with a quasi-steady chamber. Another engine, such as one that resolves startup transients or simulates a different motor type, can be added alongside it, with its own model kinds, and existing configurations keep using the engine they name.
+`engine` names the simulation engine, which is registered like a plugin. For example, a the self-pressurizing hybrid with a quasi-steady chamber, or an HRAP-equivalent simplified full transient model. Other engines, such as one that resolves startup transients or simulates a different motor type, can be added alongside it, with its own model kinds, and existing configurations keep using the engine they name.
 
 Models are found by a lookup in the plugin registry, keyed by kind and name. A configuration can only cause the import of a plugin package that is installed or listed in `comet.yaml`, never arbitrary code. An unknown name produces an error listing the available models.
 
@@ -355,9 +355,13 @@ A simulation runs in the following stages.
 1. **Assemble.** Load the motor configuration, construct the models, and build fluid property tables, grain geometry tables and combustion tables. Combustion tables are generated with NASA CEA for the configured propellants and checked against direct CEA calls between grid points. Tables are cached, so repeated runs skip this stage.
 2. **Run.** Integrate the motor state over time with scipy's `solve_ivp`, an ODE solver that chooses its own step sizes to meet an accuracy target [SIM-1].
 
-The combustion chamber is treated as quasi-steady. The chamber fills and empties in about a millisecond (its characteristic length divided by c\*), while the tank blows down over seconds. Chamber pressure is therefore not a state variable. At each derivative evaluation, the engine solves for the chamber pressure at which injector flow plus fuel flow equals nozzle flow. This avoids a stiff system that would force the solver into very small steps. The cost is that the first few milliseconds of startup, while the chamber fills, are not resolved.
-
-The chamber balance is its own function, solved with a bracketed root-finder between physical bounds (ambient and tank pressure). It starts from the previous chamber pressure, which the engine keeps, and uses a tolerance tighter than the solver's. Its iterations and any failures are recorded.
+<details>
+<summary>Example: Quasi-Steady Model</summary>
+ 
+> In this version of the engine, the combustion chamber is treated as quasi-steady. The chamber fills and empties in about a millisecond (its characteristic length divided by c\*), while the tank blows down over seconds. Chamber pressure is therefore not a state variable. At each derivative evaluation, the engine solves for the chamber pressure at which injector flow plus fuel flow equals nozzle flow. This avoids a stiff system that would force the solver into very small steps. The cost is that the first few milliseconds of startup, while the chamber fills, are not resolved.
+>
+> The chamber balance is its own function, solved with a bracketed root-finder between physical bounds (ambient and tank pressure). It starts from the previous chamber pressure, which the engine keeps, and uses a tolerance tighter than the solver's. Its iterations and any failures are recorded.
+</details>
 
 The engine builds its state vector at assembly from the named state variables each model declares, and names the output channels from them.
 
