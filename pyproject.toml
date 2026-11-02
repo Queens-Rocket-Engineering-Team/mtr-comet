@@ -1,7 +1,87 @@
 [project]
-name = "mtr-comet"
+name = "comet"
 version = "0.1.0"
-description = "Combustion Optimization & Motor Evaluation Tool"
-readme = "README.md"
-requires-python = ">=3.14"
-dependencies = []
+authors = [
+    { name = "Ari Klein" }
+]
+
+requires-python = ">=3.13,<3.15"
+dependencies = [
+  "numpy",
+  "scipy",
+  "pydantic",
+  "pint",
+  "platformdirs",
+  "coolprop",
+  "cea",
+  "ezdxf",
+  "shapely",
+  "matplotlib",
+  "pyarrow",
+  "pyyaml",
+  "typer",
+  "pandas>=3.1.0",
+]
+
+[project.optional-dependencies]
+gui = ["pyside6", "pyqtgraph"]
+
+[project.scripts]
+comet = "comet.cli:app"
+
+[project.gui-scripts]
+comet-gui = "comet.gui:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "ty==0.0.95",
+    "import-linter",
+    "scipy-stubs>=1.18.1.1",
+]
+
+[tool.uv.build-backend]
+module-name = "comet"
+
+[build-system]
+requires = ["uv_build>=0.9.0,<0.10"]
+build-backend = "uv_build"
+
+[tool.importlinter]
+root_package = "comet"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers"
+type = "layers"
+layers = [
+  "comet.cli | comet.gui",
+  "comet.api",
+  "comet.analysis | comet.sim",
+  "comet.plugin",
+  "comet.ingest | comet.storage | comet.models",
+  "comet.core",
+]
+
+[[tool.importlinter.contracts]]
+name = "Frontends use only comet.api"
+type = "forbidden"
+source_modules = ["comet.cli", "comet.gui"]
+forbidden_modules = ["comet.core", "comet.ingest", "comet.storage", "comet.models",
+                     "comet.analysis", "comet.sim", "comet.plugin"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Qt only in the GUI"
+type = "forbidden"
+source_modules = ["comet.core", "comet.ingest", "comet.storage", "comet.models",
+                  "comet.analysis", "comet.sim", "comet.api", "comet.cli"]
+forbidden_modules = ["PySide6", "pyqtgraph"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "T20"]   # T20 = no print()
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
+"prototypes/**" = ["T20"]
