@@ -3,7 +3,13 @@ from pathlib import Path
 import pytest
 
 from comet.analysis.detectors import thrust_above
-from comet.analysis.metrics import oxidizer_mass_used
+from comet.analysis.metrics import (
+    burn_time,
+    injector_pressure_drop,
+    oxidizer_mass_used,
+    total_impulse,
+)
+from comet.core.regions import mean
 from comet.ingest import ingest
 
 
@@ -18,3 +24,11 @@ def test_hotfire_mass_used_from_csv():
     assert oxidizer_mass_used(run.channel("tank_mass"), burn) == pytest.approx(
         7.5, abs=0.2
     )
+    assert total_impulse(run.channel("thrust"), burn) == pytest.approx(15160, rel=0.01)
+    assert burn_time(burn) == pytest.approx(7.2, abs=0.1)
+    assert mean(
+        injector_pressure_drop(
+            run.channel("preinjector_pressure"), run.channel("chamber_pressure"), burn
+        ),
+        burn,
+    ) == pytest.approx(184, abs=2)

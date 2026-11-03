@@ -23,6 +23,12 @@ def call(run: Run, name: str, **kwargs):
     return fn(**channels, **kwargs)
 
 
+def applicable(run: Run, name: str) -> bool:
+    """Whether every tagged input of plugin `name` is present in `run`."""
+    tags = {t for c in run.channels.values() for t in c.tags}
+    return all(tag in tags for tag in inputs(REGISTRY[name].function).values())
+
+
 def detect(run: Run, name: str, **settings) -> Region | list[Region]:
     """Run the detector `name` on `run`."""
     return call(run, f"detector/{name}", **settings)
