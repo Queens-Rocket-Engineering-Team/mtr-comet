@@ -9,6 +9,7 @@ from comet import api
 from comet.core.plugins import REGISTRY
 from comet.core.regions import mean
 from comet.core.types import Channel, Run
+from comet.ingest import ingest
 from comet.ingest.adapter import QRETCsvAdapter
 
 app = typer.Typer()
@@ -34,16 +35,22 @@ def _load(csv: Path, tag: TagOption) -> Run:
 
 
 @app.command()
-def detect(csv: Path, detector: str, tag: TagOption):
-    """Find a region in a Launch Control CSV."""
-    run = _load(csv, tag)
-    typer.echo(api.detect(run, detector))
+def detect(descriptor: Path, detector: str):
+    """Find a region in a test."""
+    typer.echo(api.detect(ingest(descriptor), detector))
 
 
 @app.command()
-def report(csv: Path, detector: str, tag: TagOption):
+def report(descriptor: Path, detector: str):
     """Every metric over the region found by `detector`."""
-    run = _load(csv, tag)
+    run = ingest(descriptor)
+    for f in run.faults:
+        typer.echo(
+            f"warning: {f.channel} {f.kind} {f.region.start:.1f}-{f.region.end:.1f}",
+            err=True,
+        )
+        if run.channels[f.channel].tags:
+            raise typer.Exit(code=1)
     region = api.detect(run, detector)
     if isinstance(region, list):
         raise typer.BadParameter(

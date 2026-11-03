@@ -1,0 +1,8 @@
+data: cold-flow-2026-03-06-slice.csv
+format: qret_csv
+channels:
+  PTRun:               {tags: [tank_pressure], range: [0, 1000]}
+  LCFill:              {tags: [tank_mass], range: [0, 100]}
+  PTPreInjector:       {range: [0, 1000]}
+  TCRun:               {range: [200, 1500]}
+  TCCombustionChamber: {range: [200, 1500]}

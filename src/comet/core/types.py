@@ -23,8 +23,18 @@ class Region:
 
 
 @dataclass(frozen=True)
+class Fault:
+    """A data-quality problem on one channel over a region."""
+
+    channel: str
+    kind: str
+    region: Region
+
+
+@dataclass(frozen=True)
 class Run:
     channels: dict[str, Channel]
+    faults: tuple[Fault, ...] = ()
 
     def channel(self, tag: str) -> Channel:
         found = [c for c in self.channels.values() if tag in c.tags]
