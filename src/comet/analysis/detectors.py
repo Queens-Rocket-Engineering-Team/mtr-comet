@@ -31,4 +31,4 @@ def _falling_interval(
         raise ValueError(
             f"{ch.name}: never falls faster than {rate_threshold} {ch.unit}/s"
         )
-    return Region(kind, ch.times[idx[0]], ch.times[idx[-1]])
+    return Region(kind, float(ch.times[idx[0]]), float(ch.times[idx[-1]]))
