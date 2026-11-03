@@ -56,6 +56,7 @@ class Dimension:
 
 
 # Typed Inputs
+# Channels
 Thrust = Annotated[Channel, Tag("thrust"), Dimension("force")]
 TankPressure = Annotated[Channel, Tag("tank_pressure"), Dimension("pressure")]
 TankMass = Annotated[Channel, Tag("tank_mass"), Dimension("mass")]
@@ -63,3 +64,9 @@ PreInjectorPressure = Annotated[
     Channel, Tag("preinjector_pressure"), Dimension("pressure")
 ]
 ChamberPressure = Annotated[Channel, Tag("chamber_pressure"), Dimension("pressure")]
+
+# Regions
+LiquidPhase = Annotated[Region, Tag("liquid_phase")]
+Burn = Annotated[Region, Tag("burn")]
+ColdFlow = Annotated[Region, Tag("cold_flow")]
+Ignition = Annotated[Region, Tag("ignition")]

@@ -41,7 +41,11 @@ def report(descriptor: Path, detector: str):
             f"{detector} found {len(region)} regions, report needs one"
         )
     for name, plugin in REGISTRY.items():
-        if plugin.kind != "metric" or not api.applicable(run, name):
+        if plugin.kind != "metric" or not api.applicable(
+            run,
+            name,
+            {region.kind: region},  # Current implementation is single region
+        ):
             continue
         value = api.compute(run, name.removeprefix("metric/"), region)
         if isinstance(value, Channel):

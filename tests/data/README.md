@@ -17,8 +17,8 @@ it is only trusted for before-and-after mass, not for flow.
 hotfires, extracted exactly from the vector figure in arXiv:2302.06725. Pressures are
 absolute (psia). Thrust was plotted on its own time base, so thrust rows carry empty
 pressure cells. Time zero is run-valve open; McGill gives liquid depletion at 6.164 s
-and 5.272 s, marked where the drop begins. Published under the arXiv non-exclusive
-licence; kept here for validation only.
+and 5.272 s, marked where the drop begins. The paper is on arXiv under its
+non-exclusive distribution licence; cite it if these numbers are used beyond tests.
 
 **waterloo-stf-2018.csv**, Waterloo Rocketry static fire from their OpenThrustPy repo
 (GPL v3), 20 Hz. The source states no units, so psi, kg and N are assumed, and the
