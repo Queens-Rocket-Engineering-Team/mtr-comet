@@ -66,3 +66,19 @@ def after(region: Region, seconds: float) -> Region:
     if region.end is None:
         raise ValueError("region has no end")
     return Region("window", region.end, region.end + seconds)
+
+
+def mean_rate(ch: Channel, window: float) -> Channel:
+    """Rate of change averaged over `window` seconds centred on each sample.
+
+    Equals the mean of the true derivative over the window. Independent of sample
+    rate when window >> sample period. Same as `np.gradient` when window == 2*dt.
+    Near the channel ends the window is clipped to the data, so it is shorter there.
+    """
+    t_lo = np.clip(ch.times - window / 2, ch.times[0], ch.times[-1])
+    t_hi = np.clip(ch.times + window / 2, ch.times[0], ch.times[-1])
+    lo = np.interp(t_lo, ch.times, ch.values)
+    hi = np.interp(t_hi, ch.times, ch.values)
+    return Channel(
+        ch.name, ch.times, (hi - lo) / (t_hi - t_lo), f"{ch.unit}/s", ch.tags
+    )

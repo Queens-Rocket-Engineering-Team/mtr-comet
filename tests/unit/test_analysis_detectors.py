@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 
-from comet.analysis.detectors import tank_pressure_drop
+from comet.analysis.detectors import tank_mass_drop, tank_pressure_drop
 from comet.core.types import Channel, Region
+from comet.ingest.adapter import QRETCsvAdapter
 
 
 def test_detector_tank_pressure_drop():
@@ -18,3 +19,14 @@ def test_detector_tank_pressure_drop():
         pytest.approx(89186.5, abs=0.5),  # type: ignore[ty:invalid-argument-type]
         pytest.approx(89195.3, abs=0.5),  # type: ignore[ty:invalid-argument-type]
     )
+
+
+def test_mass_and_pressure_detectors_agree():
+    run = QRETCsvAdapter().ingest(
+        "tests/data/cold-flow-2026-03-06-slice.csv",
+        tags={"PTRun": ["tank_pressure"], "LCFill": ["tank_mass"]},
+    )
+    by_pressure = tank_pressure_drop(run.channel("tank_pressure"))
+    by_mass = tank_mass_drop(run.channel("tank_mass"))
+    assert by_mass.start == pytest.approx(by_pressure.start, abs=1.0)
+    assert by_mass.end == pytest.approx(by_pressure.end, abs=1.0)

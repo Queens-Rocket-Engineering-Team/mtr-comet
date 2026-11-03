@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from comet.core.regions import before, integrate
+from comet.core.regions import before, integrate, mean_rate
 from comet.core.types import Channel, Region
 
 
@@ -49,3 +49,11 @@ def test_value_at_rejects_time_outside_data():
     ch = Channel("f", times=np.array([0.0, 1.0]), values=np.array([1.0, 1.0]), unit="N")
     with pytest.raises(ValueError):
         integrate(ch, before(Region("burn", 0.2, 1.0), 0.5))  # window is [-0.3, 0.2]
+
+
+def test_rate_of_linear_ramp():
+    """Test that the windowed mean rate of a function matches the slope"""
+    ch = Channel("x", np.linspace(0, 10, 101), 3.0 * np.linspace(0, 10, 101), "m")
+    r = mean_rate(ch, window=1.0)
+    assert r.unit == "m/s"
+    assert r.values[50] == pytest.approx(3.0)
