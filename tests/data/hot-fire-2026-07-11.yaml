@@ -1,0 +1,8 @@
+data: hot-fire-2026-07-11-slice.csv
+format: qret_csv
+channels:
+  LCThrust: {tags: [thrust], range: [-500, 30000]}
+  LCFill:   {tags: [tank_mass], range: [-20, 200]}
+  PT202:    {tags: [tank_pressure], range: [-15, 1000]}
+  PT203:    {tags: [preinjector_pressure], range: [-15, 1000]}
+  PT204:    {tags: [chamber_pressure], range: [-15, 1000]}

@@ -2,7 +2,7 @@ import numpy as np
 
 from comet.core.plugins import detector
 from comet.core.regions import mean_rate
-from comet.core.types import Channel, Region, TankMass, TankPressure
+from comet.core.types import Channel, Region, TankMass, TankPressure, Thrust
 
 
 @detector(kind="cold_flow")
@@ -32,3 +32,12 @@ def _falling_interval(
             f"{ch.name}: never falls faster than {rate_threshold} {ch.unit}/s"
         )
     return Region(kind, float(ch.times[idx[0]]), float(ch.times[idx[-1]]))
+
+
+@detector(kind="burn")
+def thrust_above(thrust: Thrust, threshold: float = 100.0) -> Region:
+    """Interval where thrust exceeds threshold (N)."""
+    idx = np.flatnonzero(thrust.values > threshold)
+    if len(idx) == 0:
+        raise ValueError(f"{thrust.name}: never exceeds {threshold} {thrust.unit}")
+    return Region("burn", float(thrust.times[idx[0]]), float(thrust.times[idx[-1]]))

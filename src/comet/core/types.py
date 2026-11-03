@@ -59,3 +59,7 @@ class Dimension:
 Thrust = Annotated[Channel, Tag("thrust"), Dimension("force")]
 TankPressure = Annotated[Channel, Tag("tank_pressure"), Dimension("pressure")]
 TankMass = Annotated[Channel, Tag("tank_mass"), Dimension("mass")]
+PreInjectorPressure = Annotated[
+    Channel, Tag("preinjector_pressure"), Dimension("pressure")
+]
+ChamberPressure = Annotated[Channel, Tag("chamber_pressure"), Dimension("pressure")]
