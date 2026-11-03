@@ -1,0 +1,8 @@
+# McGill Rocket Team HF4, 2022-03-05, Maelstrom N2O/paraffin. Extracted from the vector
+# figure in arXiv:2302.06725 (see README.md). Pressures are ABSOLUTE (psia). t=0 is run-valve open.
+data: mcgill-hf4-2022.csv
+channels:
+  PTChamber: {tags: [chamber_pressure], range: [0, 1000]}
+  PTRun:     {tags: [preinjector_pressure], range: [0, 1000]}
+  PTTank:    {tags: [tank_pressure], range: [0, 1000]}
+  LCThrust:  {tags: [thrust], range: [-1, 7]}

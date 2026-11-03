@@ -3,7 +3,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from comet.analysis.detectors import tank_mass_drop, tank_pressure_drop, thrust_above
+from comet.analysis.detectors import (
+    liquid_phase,
+    tank_mass_drop,
+    tank_pressure_drop,
+    thrust_above,
+)
 from comet.core.types import Channel, Region
 from comet.ingest import ingest
 from comet.ingest.adapter import QRETCsvAdapter
@@ -47,3 +52,15 @@ def test_tank_detectors_agree_with_thrust_at_200hz():
     assert tank_mass_drop(run.channel("tank_mass")).start == pytest.approx(
         burn.start, abs=1.0
     )
+
+
+def test_liquid_phase_depletion_on_synthetic_break():
+    """20 psi/s decline, then 200 psi/s from t=4: 3 % departure lands 0.06 s later."""
+    t = np.arange(0, 8, 0.005)
+    v = np.where(
+        t < 1,
+        0,
+        np.where(t < 4, 400 - 20 * (t - 1), np.maximum(340 - 200 * (t - 4), 0)),
+    )
+    r = liquid_phase(Channel("pc", t, v, "psi"), smoothing=0.1, threshold=0.03)
+    assert (r.start, r.end) == pytest.approx((1.0, 4.06), abs=0.01)
