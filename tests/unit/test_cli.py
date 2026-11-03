@@ -8,10 +8,8 @@ def test_cli_detect_cold_flow():
         app,
         [
             "detect",
-            "tests/data/cold-flow-2026-03-06-slice.csv",
+            "tests/data/cold-flow-2026-03-06.yaml",
             "tank_pressure_drop",
-            "--tag",
-            "PTRun=tank_pressure",
         ],
     )
     assert result.exit_code == 0, result.output
@@ -23,12 +21,8 @@ def test_cli_report_cold_flow():
         app,
         [
             "report",
-            "tests/data/cold-flow-2026-03-06-slice.csv",
+            "tests/data/cold-flow-2026-03-06.yaml",
             "tank_pressure_drop",
-            "--tag",
-            "PTRun=tank_pressure",
-            "--tag",
-            "LCFill=tank_mass",
         ],
     )
     assert result.exit_code == 0, result.output
