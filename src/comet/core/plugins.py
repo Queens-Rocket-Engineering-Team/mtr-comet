@@ -24,11 +24,11 @@ class Plugin:
             return f"{self.kind}/unknown_{id(self.function)}"
 
 
-_REGISTRY: dict[str, Plugin] = {}
+REGISTRY: dict[str, Plugin] = {}
 
 
 def _add(p: Plugin):
-    _REGISTRY[p.name] = p
+    REGISTRY[p.name] = p
 
 
 # A metric must output a number or a channel
