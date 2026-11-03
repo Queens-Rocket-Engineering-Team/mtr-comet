@@ -1,0 +1,9 @@
+# Waterloo Rocketry static fire, OpenThrustPy STF_Data.csv (GPL v3, 2018). Units are NOT stated
+# by the source; psi / kg / N assumed. P_CC rises through the burn while thrust falls, so treat the
+# chamber channel with suspicion (see README.md). t=0 is presumably valve open.
+data: waterloo-stf-2018.csv
+channels:
+  PCC:     {tags: [chamber_pressure], range: [-15, 1500]}
+  PTank:   {tags: [tank_pressure], range: [-15, 1500]}
+  OxyMass: {tags: [tank_mass], range: [-5, 50]}
+  Thrust:  {tags: [thrust], range: [-500, 10000]}
