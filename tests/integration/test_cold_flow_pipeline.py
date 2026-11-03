@@ -1,19 +1,16 @@
+from pathlib import Path
+
 import pytest
 
 from comet.analysis.detectors import tank_pressure_drop
 from comet.analysis.filters import despike
 from comet.analysis.metrics import oxidizer_mass_flow
 from comet.core.regions import mean
-from comet.ingest.adapter import QRETCsvAdapter
+from comet.ingest import ingest
 
 
 def test_cold_flow_mass_flow_from_csv():
-    adapter = QRETCsvAdapter()
-
-    run = adapter.ingest(
-        "tests/data/cold-flow-2026-03-06-slice.csv",
-        tags={"PTRun": ["tank_pressure"], "LCFill": ["tank_mass"]},
-    )
+    run = ingest(Path("tests/data/cold-flow-2026-03-06.yaml"))
 
     pressure = run.channel("tank_pressure")
     mass = despike(run.channel("tank_mass"))

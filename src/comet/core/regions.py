@@ -19,7 +19,7 @@ def crop(ch: Channel, region: Region) -> Channel:
 
     Interpolated samples are added at the region boundaries.
     """
-    end = region.end if region.end is not None else ch.times[-1]
+    end = end_of(ch, region)
     lo = np.searchsorted(ch.times, region.start, side="right")
     hi = np.searchsorted(ch.times, end, side="left")
     times = np.concatenate(([region.start], ch.times[lo:hi], [end]))
@@ -27,6 +27,11 @@ def crop(ch: Channel, region: Region) -> Channel:
         ([value_at(ch, region.start)], ch.values[lo:hi], [value_at(ch, end)])
     )
     return Channel(ch.name, times, values, ch.unit, ch.tags)
+
+
+def end_of(ch: Channel, region: Region) -> float:
+    """The region's end, or the end of the data for an open region."""
+    return region.end if region.end is not None else float(ch.times[-1])
 
 
 def cumulative(ch: Channel, region: Region) -> Channel:
@@ -49,7 +54,7 @@ def integrate(ch: Channel, region: Region) -> float:
 def mean(ch: Channel, region: Region) -> float:
     """Returns the time-weighted mean of the channel values over a region"""
     # For open regions, find the end
-    end = region.end if region.end is not None else ch.times[-1]
+    end = end_of(ch, region)
     if end == region.start:
         # For zero-length regions, use the value at the given time
         return value_at(ch, region.start)
