@@ -14,6 +14,13 @@ def value_at(ch: Channel, t: float) -> float:
     return float(np.interp(t, ch.times, ch.values))
 
 
+def values_at(ch: Channel, times: np.ndarray) -> np.ndarray:
+    """Interpolate the channel onto `times`. Array form of value_at."""
+    if times[0] < ch.times[0] or times[-1] > ch.times[-1]:
+        raise ValueError(f"{ch.name}: requested times are outside recorded data")
+    return np.interp(times, ch.times, ch.values)
+
+
 def crop(ch: Channel, region: Region) -> Channel:
     """The channel restricted to the region.
 

@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
 
-from comet.analysis.metrics import oxidizer_mass_flow, oxidizer_mass_used
+from comet.analysis.metrics import (
+    injector_pressure_drop,
+    oxidizer_mass_flow,
+    oxidizer_mass_used,
+)
 from comet.core.types import Channel, Region
 
 RAMP = Channel(
@@ -24,3 +28,26 @@ def test_oxidizer_mass_flow_linear_ramp():
 def test_oxidizer_mass_used_linear_ramp():
     """Steady 1 kg/s drain: mean over the 2s before t=2 is 9 kg, mass at t=8 is 2 kg."""
     assert oxidizer_mass_used(RAMP, Region("burn", 2.0, 8.0)) == pytest.approx(7.0)
+
+
+CONST_PREINJECTOR = Channel(
+    "preinjector_pressure",
+    times=np.linspace(0.0, 10.0, 11),
+    values=np.full(11, 100.0),
+    unit="psi",
+)
+
+CONST_CHAMBER = Channel(
+    "chamber_pressure",
+    times=np.linspace(0.0, 10.0, 5),
+    values=np.full(5, 30.0),
+    unit="psi",
+)
+
+
+def test_injector_pressure_drop_corrects_mismatched_time():
+    values = injector_pressure_drop(
+        CONST_PREINJECTOR, CONST_CHAMBER, Region("burn", 0.0, 10.0)
+    ).values
+
+    assert np.allclose(values, 70)
