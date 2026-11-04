@@ -7,6 +7,7 @@ from comet.core.types import (
     ChamberPressure,
     Channel,
     Region,
+    RunValve,
     TankMass,
     TankPressure,
     Thrust,
@@ -76,8 +77,7 @@ def liquid_phase(
 
     `smoothing` is a median filter width in seconds, `threshold` the fraction below
     the pre-depletion trend that counts as depletion, `min_level` the fraction of
-    peak pressure that counts as burning. Defaults were checked on QRET HF4, McGill
-    HF4 and HF5 and Waterloo STF (tests/data/README.md).
+    peak pressure that counts as burning.
     """
     pressure = _smooth(chamber, smoothing)
     t, p = pressure.times, pressure.values
@@ -137,3 +137,22 @@ def _linear_trend(ch: Channel, start: float, end: float) -> np.ndarray | None:
         return None
     slope, intercept = np.polyfit(ch.times[window], ch.values[window], 1)
     return slope * ch.times + intercept
+
+
+@detector(kind="run_valve_open")
+def run_valve_open(valve: RunValve) -> Region:
+    """From the first time the run valve opens to the last time it closes.
+
+    Closures in between are inside the region: the valve is treated as open for
+    the whole period it was commanded open.
+    """
+    opens = np.flatnonzero(np.diff(valve.values) == 1) + 1
+    closes = np.flatnonzero(np.diff(valve.values) == -1) + 1
+    if len(opens) == 0:
+        raise ValueError(f"{valve.name}: never opens")
+    end = (
+        float(valve.times[closes[-1]])
+        if len(closes) and closes[-1] > opens[-1]
+        else None
+    )
+    return Region("run_valve_open", float(valve.times[opens[0]]), end)

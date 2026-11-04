@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import Annotated
 
@@ -36,8 +37,22 @@ class InjectorConfig(BaseModel):
     area: float  # m^2, total orifice area
 
 
+class NozzleConfig(BaseModel):
+    throat_diameter: float  # m
+    exit_diameter: float  # m
+
+    @property
+    def throat_area(self) -> float:
+        return math.pi * (self.throat_diameter / 2) ** 2
+
+    @property
+    def expansion_ratio(self) -> float:
+        return (self.exit_diameter / self.throat_diameter) ** 2
+
+
 class MotorConfig(BaseModel):
     injector: InjectorConfig
+    nozzle: NozzleConfig
 
 
 @dataclass(frozen=True)
@@ -74,9 +89,12 @@ PreInjectorPressure = Annotated[
     Channel, Tag("preinjector_pressure"), Dimension("pressure")
 ]
 ChamberPressure = Annotated[Channel, Tag("chamber_pressure"), Dimension("pressure")]
+RunValve = Annotated[Channel, Tag("run_valve")]
 
 # Regions
 LiquidPhase = Annotated[Region, Tag("liquid_phase")]
 Burn = Annotated[Region, Tag("burn")]
 ColdFlow = Annotated[Region, Tag("cold_flow")]
 Ignition = Annotated[Region, Tag("ignition")]
+# Either kind of oxidizer flow; listed in priority order when both are present.
+OxidizerFlow = Annotated[Region, Tag("burn"), Tag("cold_flow")]

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from types import FunctionType
-from typing import Literal, Protocol
+from typing import Literal, Protocol, get_type_hints
 
 from pydantic.alias_generators import to_snake
 
@@ -43,6 +43,12 @@ class DetectorDecorator(Protocol):
 
 def metric(*, unit: str) -> MetricDecorator:
     def register(fn):
+        # A bare Region would never be selected by a report; the author says which kind.
+        for param, hint in get_type_hints(fn, include_extras=True).items():
+            if hint is Region and param != "return":
+                raise TypeError(
+                    f"{fn.__name__}: {param!r} needs a typed region, e.g. Burn"
+                )
         p = Plugin("metric", fn, unit=unit)
         fn.__comet_plugin__ = p
         _add(p)

@@ -10,26 +10,20 @@ reference.
 
 from pathlib import Path
 
-import numpy as np
 import pytest
 
-from comet.analysis.detectors import liquid_phase
-from comet.core.types import Run
+from comet.analysis.detectors import liquid_phase, run_valve_open
 from comet.ingest import ingest
 
 DATA = Path("tests/data")
 
 
-def valve_open(run: Run) -> float:
-    """First 0 -> 1 edge of the main valve state channel."""
-    av = run.channels["valve_AV205"]
-    return float(av.times[np.flatnonzero(np.diff(av.values) == 1)[0] + 1])
-
-
 def test_qret_hf4_depletion_matches_hf_analysis_tools():
     run = ingest(DATA / "hot-fire-2026-07-11.yaml")
-    depletion = liquid_phase(run.channel("chamber_pressure")).end - valve_open(run)
-    assert depletion == pytest.approx(3.60, abs=0.05)
+    liquid = liquid_phase(run.channel("chamber_pressure"))
+    valve_open = run_valve_open(run.channel("run_valve")).start
+    assert liquid.end is not None
+    assert liquid.end - valve_open == pytest.approx(3.60, abs=0.05)
 
 
 @pytest.mark.parametrize(

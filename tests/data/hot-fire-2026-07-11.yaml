@@ -7,3 +7,7 @@ channels:
   PT202:    {tags: [tank_pressure], range: [-15, 1000]}
   PT203:    {tags: [preinjector_pressure], range: [-15, 1000]}
   PT204:    {tags: [chamber_pressure], range: [-15, 1000]}
+
+  valve_AV205:    {tags: [run_valve], debounce: 0.1}
+  relay_IgnPrime: {debounce: 0.1}
+  relay_IgnRun:   {debounce: 0.1}

@@ -18,5 +18,13 @@ def ingest(path: Path) -> Run:
         if spec.range and name in run.channels
         for f in checks.railed(run.channels[name], *spec.range)
     ]
+
+    faults += [
+        f
+        for name, spec in d.channels.items()
+        if spec.debounce and name in run.channels
+        for f in checks.glitch(run.channels[name], spec.debounce)
+    ]
+
     motor = descriptor.load_motor(d.motor) if d.motor else None
     return Run(run.channels, tuple(faults), motor)

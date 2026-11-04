@@ -1,2 +1,5 @@
 injector:
   area: 9.9e-5  # m^2, 99 mm^2 from the sim script
+nozzle:
+  throat_diameter: 0.042  # m, design value; post-fire throat not yet measured
+  exit_diameter: 0.09525  # m, 3.75 in
