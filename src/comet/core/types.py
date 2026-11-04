@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Annotated
 
 import numpy as np
+from pydantic import BaseModel
 
 
 @dataclass(frozen=True)
@@ -31,10 +32,19 @@ class Fault:
     region: Region
 
 
+class InjectorConfig(BaseModel):
+    area: float  # m^2, total orifice area
+
+
+class MotorConfig(BaseModel):
+    injector: InjectorConfig
+
+
 @dataclass(frozen=True)
 class Run:
     channels: dict[str, Channel]
     faults: tuple[Fault, ...] = ()
+    motor: MotorConfig | None = None
 
     def channel(self, tag: str) -> Channel:
         found = [c for c in self.channels.values() if tag in c.tags]

@@ -1,5 +1,6 @@
 data: hot-fire-2026-07-11-slice.csv
 format: qret_csv
+motor: motor-hf4.yaml
 channels:
   LCThrust: {tags: [thrust], range: [-500, 30000]}
   LCFill:   {tags: [tank_mass], range: [-20, 200]}

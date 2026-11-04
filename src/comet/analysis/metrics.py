@@ -1,5 +1,6 @@
 import numpy as np
 
+from comet.analysis.properties import n2o_saturated_density
 from comet.core.plugins import metric
 from comet.core.regions import (
     before,
@@ -13,11 +14,15 @@ from comet.core.regions import (
 from comet.core.types import (
     ChamberPressure,
     Channel,
+    LiquidPhase,
+    MotorConfig,
     PreInjectorPressure,
     Region,
     TankMass,
+    TankPressure,
     Thrust,
 )
+from comet.core.units import PSI
 
 
 @metric(unit="kg/s")
@@ -73,3 +78,34 @@ def injector_pressure_drop(
         up.values - values_at(chamber, up.times),
         unit=up.unit,
     )
+
+
+@metric(unit="")
+def discharge_coefficient(
+    upstream: PreInjectorPressure,
+    chamber: ChamberPressure,
+    tank: TankPressure,
+    mass: TankMass,
+    region: Region,
+    liquid: LiquidPhase,
+    motor: MotorConfig,
+    ambient_psi: float = 14.696,
+    settle: float = 2.0,
+) -> float:
+    """Injector Cd: mass drained over the region divided by the ideal (Cd = 1) mass.
+
+    Ideal flow is single-phase incompressible, area * sqrt(2 * density * pressure drop),
+    with saturated N2O density at tank pressure: liquid until the liquid-phase region
+    ends, vapour after.
+    """
+    measured = oxidizer_mass_used(mass, region, settle)
+    drop = injector_pressure_drop(upstream, chamber, region)
+    p = crop(tank, region)
+    # Tank reads gauge; saturation properties need absolute pressure.
+    density = n2o_saturated_density(
+        (p.values + ambient_psi) * PSI, p.times <= liquid.end
+    )
+    ideal_flow = motor.injector.area * np.sqrt(
+        2 * density * np.clip(values_at(drop, p.times) * PSI, 0, None)
+    )
+    return measured / float(np.trapezoid(ideal_flow, p.times))

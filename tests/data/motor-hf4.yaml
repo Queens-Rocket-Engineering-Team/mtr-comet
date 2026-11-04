@@ -1,0 +1,2 @@
+injector:
+  area: 9.9e-5  # m^2, 99 mm^2 from the sim script
