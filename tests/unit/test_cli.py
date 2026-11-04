@@ -33,3 +33,4 @@ def test_cli_report_hotfire():
     assert result.exit_code == 0, result.output
     assert "burn: 10015.15-10022.32 (thrust_above)" in result.output
     assert "discharge_coefficient: 0.35" in result.output
+    assert "warning: relay_IgnRun glitch" in result.output

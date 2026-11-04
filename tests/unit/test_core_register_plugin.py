@@ -3,12 +3,12 @@ import pytest
 
 from comet.core.plugins import metric
 from comet.core.regions import integrate
-from comet.core.types import Channel, Region, Thrust
+from comet.core.types import Burn, Channel, Region, Thrust
 
 
 def test_register_metric():
     @metric(unit="N*s")
-    def total_impulse(thrust: Thrust, region: Region) -> float:
+    def total_impulse(thrust: Thrust, region: Burn) -> float:
         return integrate(thrust, region)
 
     thrust: Thrust = Channel(

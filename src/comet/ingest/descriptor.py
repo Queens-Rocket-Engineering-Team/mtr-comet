@@ -9,6 +9,7 @@ from comet.core.types import MotorConfig
 class ChannelSpec(BaseModel):
     tags: list[str] = []
     range: tuple[float, float] | None = None
+    debounce: float | None = None
 
 
 class Descriptor(BaseModel):

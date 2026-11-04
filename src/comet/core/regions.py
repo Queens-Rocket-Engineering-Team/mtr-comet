@@ -94,3 +94,8 @@ def mean_rate(ch: Channel, window: float) -> Channel:
     return Channel(
         ch.name, ch.times, (hi - lo) / (t_hi - t_lo), f"{ch.unit}/s", ch.tags
     )
+
+
+def span(ch: Channel) -> Region:
+    """The interval a channel covers."""
+    return Region("span", float(ch.times[0]), float(ch.times[-1]))
