@@ -1,9 +1,10 @@
 import numpy as np
-from CoolProp.CoolProp import PropsSI
 
 
 def n2o_saturated_density(p_pa: np.ndarray, liquid: np.ndarray) -> np.ndarray:
     """Saturated N2O density at each pressure: liquid where `liquid`, else vapour."""
+    from CoolProp.CoolProp import PropsSI  # lazy: slow import
+
     p = np.maximum(p_pa, 1e5)
     return np.where(
         liquid,
