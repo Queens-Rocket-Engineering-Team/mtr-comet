@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from typing import Annotated, get_args, get_origin, get_type_hints
 
 from comet.core.plugins import REGISTRY
-from comet.core.types import Channel, Region, Run, Tag
+from comet.core.types import Channel, MotorConfig, Region, Run, Tag
 
 
 def _tagged(fn, base: type) -> dict[str, str]:
@@ -32,6 +32,14 @@ def call(run: Run, name: str, regions: Mapping[str, Region] = {}, **kwargs):
     fn = REGISTRY[name].function
     channels = {param: run.channel(tag) for param, tag in channel_inputs(fn).items()}
     found = {param: regions[tag] for param, tag in region_inputs(fn).items()}
+
+    if needs_motor(fn):
+        if run.motor is None:
+            raise ValueError(f"{name} needs a motor config, descriptor has none")
+        kwargs |= {
+            p: run.motor for p, h in get_type_hints(fn).items() if h is MotorConfig
+        }
+
     return fn(**channels, **found, **kwargs)
 
 
@@ -39,8 +47,10 @@ def applicable(run: Run, name: str, regions: Mapping[str, Region] = {}) -> bool:
     """Whether every tagged input of plugin `name` can be resolved."""
     fn = REGISTRY[name].function
     channel_tags = {t for c in run.channels.values() for t in c.tags}
-    return all(tag in channel_tags for tag in channel_inputs(fn).values()) and all(
-        tag in regions for tag in region_inputs(fn).values()
+    return (
+        all(tag in channel_tags for tag in channel_inputs(fn).values())
+        and all(tag in regions for tag in region_inputs(fn).values())
+        and (run.motor is not None or not needs_motor(fn))
     )
 
 
@@ -54,3 +64,7 @@ def compute(
 ) -> float | Channel:
     """Evaluate the metric `name` over `region`."""
     return call(run, f"metric/{name}", regions, region=region, **settings)
+
+
+def needs_motor(fn) -> bool:
+    return MotorConfig in get_type_hints(fn).values()

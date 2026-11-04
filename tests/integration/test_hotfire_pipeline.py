@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from comet.analysis.detectors import thrust_above
+import comet.api
+from comet.analysis.detectors import liquid_phase, thrust_above
 from comet.analysis.metrics import (
     burn_time,
     injector_pressure_drop,
@@ -32,3 +33,14 @@ def test_hotfire_mass_used_from_csv():
         ),
         burn,
     ) == pytest.approx(184, abs=2)
+
+
+def test_hotfire_discharge_coefficient_through_api():
+    run = ingest(Path("tests/data/hot-fire-2026-07-11.yaml"))
+    burn = thrust_above(run.channel("thrust"))
+    liquid = liquid_phase(run.channel("chamber_pressure"))
+
+    regions = {"liquid_phase": liquid}
+    cd = comet.api.compute(run, "discharge_coefficient", burn, regions)
+
+    assert cd == pytest.approx(0.353, abs=0.01)
