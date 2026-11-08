@@ -43,7 +43,8 @@ class DetectorDecorator(Protocol):
 
 def metric(*, unit: str) -> MetricDecorator:
     def register(fn):
-        # A bare Region would never be selected by a report; the author says which kind.
+        # A bare Region would never be selected by a report, so the author must say
+        # which kind it applies to.
         for param, hint in get_type_hints(fn, include_extras=True).items():
             if hint is Region and param != "return":
                 raise TypeError(

@@ -1,1 +1,1 @@
-PSI = 6894.757  # Pa per psi
+PA_PER_PSI = 6894.757

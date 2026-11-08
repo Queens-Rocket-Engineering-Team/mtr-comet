@@ -1,7 +1,6 @@
 import numpy as np
 
 from comet.analysis.filters import despike
-from comet.analysis.properties import n2o_saturated_density
 from comet.core.plugins import metric
 from comet.core.regions import (
     before,
@@ -24,7 +23,9 @@ from comet.core.types import (
     TankPressure,
     Thrust,
 )
-from comet.core.units import PSI
+from comet.core.units import PA_PER_PSI
+from comet.models.injector import spi_mass_flow
+from comet.models.nitrous import n2o_saturated_density
 
 
 @metric(unit="kg/s")
@@ -34,12 +35,11 @@ def oxidizer_mass_flow(mass: TankMass, region: OxidizerFlow) -> Channel:
     Positive during flow.
     """
     m = crop(mass, region)
-    return Channel(
-        "oxidizer_mass_flow",
-        m.times,
-        -np.gradient(m.values, m.times),
-        unit=f"{m.unit}/s",
-    )
+    # Mass falls as oxidizer leaves, so the flow out is minus the slope. This is a
+    # per-sample derivative: integrating it does not recover the mass change exactly,
+    # so use oxidizer_mass_used for totals.
+    flow_out = -np.gradient(m.values, m.times)
+    return Channel("oxidizer_mass_flow", m.times, flow_out, unit=f"{m.unit}/s")
 
 
 @metric(unit="kg")
@@ -51,7 +51,11 @@ def oxidizer_mass_used(
     Start mass is the mean over the `settle` seconds before the region, end mass
     is taken right at the end of the burn.
     """
-    return mean(mass, before(region, settle)) - value_at(mass, end_of(mass, region))
+    # The start is averaged over a quiet window because the reading is disturbed when
+    # flow begins. The end is a single value because the tank may keep emptying after.
+    start_mass = mean(mass, before(region, settle))
+    end_mass = value_at(mass, end_of(mass, region))
+    return start_mass - end_mass
 
 
 @metric(unit="N*s")
@@ -105,14 +109,17 @@ def discharge_coefficient(
     measured = oxidizer_mass_used(mass, region, settle)
     drop = injector_pressure_drop(upstream, chamber, region)
     p = crop(tank, region)
-    # Tank reads gauge; saturation properties need absolute pressure.
-    density = n2o_saturated_density(
-        (p.values + ambient_psi) * PSI, p.times <= liquid.end
+
+    # The tank transducer reads gauge, and saturation properties need absolute.
+    is_liquid = p.times <= liquid.end
+    density = n2o_saturated_density((p.values + ambient_psi) * PA_PER_PSI, is_liquid)
+    # The model is linear in cd, so cd=1 gives the flow an ideal injector would pass.
+    # The real injector passed `measured`, and Cd is the ratio of the two masses.
+    ideal_flow = spi_mass_flow(
+        motor.injector.area, density, values_at(drop, p.times) * PA_PER_PSI, cd=1.0
     )
-    ideal_flow = motor.injector.area * np.sqrt(
-        2 * density * np.clip(values_at(drop, p.times) * PSI, 0, None)
-    )
-    return measured / float(np.trapezoid(ideal_flow, p.times))
+    ideal_mass = float(np.trapezoid(ideal_flow, p.times))
+    return measured / ideal_mass
 
 
 @metric(unit="")
@@ -127,8 +134,8 @@ def thrust_coefficient(
 ) -> Channel:
     """Thrust coefficient: thrust over absolute chamber pressure times throat area.
 
-    Chamber pressure on the throat area is the force before the nozzle does anything;
-    the coefficient is how much the nozzle multiplies it. It depends only on the
+    Chamber pressure on the throat area is the force before the nozzle does anything.
+    The coefficient is how much the nozzle multiplies it. It depends only on the
     nozzle's expansion ratio and the gas, so a value well below the ideal for that
     ratio points at the thrust or pressure measurement, or at the throat size.
     """
@@ -142,6 +149,6 @@ def thrust_coefficient(
     # than divide, so the series may start after the region does.
     kept = pressure > min_chamber_psi
     cf = (force.values[kept] - tare) / (
-        (pressure[kept] + ambient_psi) * PSI * motor.nozzle.throat_area
+        (pressure[kept] + ambient_psi) * PA_PER_PSI * motor.nozzle.throat_area
     )
     return Channel("thrust_coefficient", force.times[kept], cf, unit="")

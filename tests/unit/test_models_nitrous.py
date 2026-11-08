@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from comet.analysis.properties import n2o_saturated_density
+from comet.models.nitrous import n2o_saturated_density
 
 
 def test_n2o_saturated_density_at_50_bar():
