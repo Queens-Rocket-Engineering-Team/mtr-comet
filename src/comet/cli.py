@@ -36,8 +36,9 @@ def report(descriptor: Path):
         if run.channels[f.channel].tags:
             raise typer.Exit(code=1)
 
-    # Run every detector whose inputs this test has. First detector registered for a
-    # kind supplies that region; later ones still print so disagreement is visible.
+    # Run every detector whose inputs this test has. The first detector registered
+    # for a kind supplies that region. Later ones still print, so any disagreement
+    # between detectors is visible.
     regions: dict[str, Region] = {}
     for name, plugin in REGISTRY.items():
         if plugin.kind != "detector" or not api.applicable(run, name):

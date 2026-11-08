@@ -1,4 +1,15 @@
+import numpy as np
+
 from comet.core.types import Channel
+
+
+def odd_sample_count(ch: Channel, seconds: float) -> int:
+    """How many samples span `seconds` of this channel, rounded to an odd number.
+
+    Median and polynomial filters need an odd window so it is centred on a sample.
+    """
+    dt = float(np.median(np.diff(ch.times)))
+    return max(3, round(seconds / dt) | 1)
 
 
 def despike(ch: Channel, samples: int = 3) -> Channel:

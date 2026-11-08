@@ -96,5 +96,5 @@ LiquidPhase = Annotated[Region, Tag("liquid_phase")]
 Burn = Annotated[Region, Tag("burn")]
 ColdFlow = Annotated[Region, Tag("cold_flow")]
 Ignition = Annotated[Region, Tag("ignition")]
-# Either kind of oxidizer flow; listed in priority order when both are present.
+# Either kind of oxidizer flow. When a test has both, the burn is used.
 OxidizerFlow = Annotated[Region, Tag("burn"), Tag("cold_flow")]

@@ -1,6 +1,6 @@
 import numpy as np
 
-from comet.analysis.filters import despike
+from comet.analysis.filters import despike, odd_sample_count
 from comet.core.plugins import detector
 from comet.core.regions import mean_rate
 from comet.core.types import (
@@ -102,7 +102,8 @@ def liquid_phase(
     if trend is None:
         raise ValueError(f"{chamber.name}: burn too short to fit a liquid-phase trend")
 
-    # Depletion is the first moment pressure falls a fraction below that line.
+    # Depletion is the first moment pressure falls a fraction below that line,
+    # searching from where the trend fit began.
     departed = (t > steepest_fall - LIQUID_DEPLETION_TREND_WINDOW[0]) & (
         p < (1 - threshold) * trend
     )
@@ -115,9 +116,8 @@ def liquid_phase(
 
 
 def _smooth(ch: Channel, seconds: float) -> Channel:
-    """Median filter of `seconds` width, converted to an odd sample count."""
-    dt = float(np.median(np.diff(ch.times)))
-    return despike(ch, samples=max(3, round(seconds / dt) | 1))
+    """Median filter of `seconds` width."""
+    return despike(ch, samples=odd_sample_count(ch, seconds))
 
 
 def _steepest_fall(ch: Channel, after: float, where: np.ndarray) -> float:
@@ -150,9 +150,8 @@ def run_valve_open(valve: RunValve) -> Region:
     closes = np.flatnonzero(np.diff(valve.values) == -1) + 1
     if len(opens) == 0:
         raise ValueError(f"{valve.name}: never opens")
-    end = (
-        float(valve.times[closes[-1]])
-        if len(closes) and closes[-1] > opens[-1]
-        else None
-    )
+    # The valve is closed at the end only if the last edge was a close. Otherwise
+    # it was still open when the data ended, and the region has no end.
+    closed_at_end = len(closes) > 0 and closes[-1] > opens[-1]
+    end = float(valve.times[closes[-1]]) if closed_at_end else None
     return Region("run_valve_open", float(valve.times[opens[0]]), end)
